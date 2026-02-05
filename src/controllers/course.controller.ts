@@ -75,7 +75,7 @@ export const getCourseById = async (req: Request, res: Response) => {
 export const updateCourse = async (req: Request, res: Response) => {
 
     try {
-        
+
         if (req.role !== "INSTRUCTOR") {
             return res.status(403).json({
                 success: false,
@@ -122,7 +122,7 @@ export const updateCourse = async (req: Request, res: Response) => {
 export const deleteCourse = async (req: Request, res: Response) => {
 
     try {
-        
+
         if (req.role !== "INSTRUCTOR") {
             return res.status(403).json({
                 success: false,
@@ -151,5 +151,25 @@ export const deleteCourse = async (req: Request, res: Response) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ success: false, message: "Internal server error, failed to delete course." });
+    }
+}
+
+export const getLessonByCourseId = async (req: Request, res: Response) => {
+    try {
+        const courseId = req.params.courseId as string;
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            include: { lessons: true }
+        });
+
+        if (!course) {
+            return res.status(404).json({ success: false, message: "Course not found" });
+        }
+
+        return res.status(200).json({ success: true, lessons: course.lessons });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Internal server error, failed to get lessons." });
     }
 }
