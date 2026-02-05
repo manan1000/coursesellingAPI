@@ -15,6 +15,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth",authRoutes);
 app.use("/api/course",courseRoutes);
+app.use("/api/lessons",lessonRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server listening on PORT=${PORT}`);

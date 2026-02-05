@@ -5,3 +5,10 @@ export const createCourseSchema = z.object({
   description: z.string().optional(),
   price: z.number().int().positive(),
 });
+
+
+export const updateCourseSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  price: z.number().int().positive().optional(),
+});
