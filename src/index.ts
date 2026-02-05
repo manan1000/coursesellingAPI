@@ -3,6 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth.route";
 import courseRoutes from "./routes/course.route";
 import lessonRoutes from "./routes/lesson.route";
+import purchaseRoutes from "./routes/purchase.route";
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -17,6 +18,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/lessons", lessonRoutes);
+app.use("/api/purchases", purchaseRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server listening on PORT=${PORT}`);
