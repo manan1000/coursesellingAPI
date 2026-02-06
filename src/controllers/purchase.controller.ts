@@ -17,34 +17,50 @@ export const createPurchase = async (req: Request, res: Response) => {
         }
         const { courseId } = parsed.data;
 
-        const course = await prisma.course.findUnique({
-            where: { id: courseId }
+        const purchase = await prisma.$transaction(async (tx) => {
+            const course = await tx.course.findUnique({
+                where: { id: courseId }
+            });
+
+            if (!course) {
+                throw new Error("Course not found.");
+            }
+
+            const alreadyPurchased = await tx.purchase.findFirst({
+                where: {
+                    userId: req.userId,
+                    courseId
+                }
+            });
+
+            if (alreadyPurchased) {
+                throw new Error("Already purchased.");
+            }
+            return tx.purchase.create({
+                data: {
+                    userId: req.userId,
+                    courseId
+                }
+            });
+
         });
 
-        if (!course) {
+        
+
+        
+
+        return res.status(201).json({ success: true, purchaseId: purchase.id });
+    } catch (error: any) {
+        console.error(error);
+
+        if(error.message==="Course not found."){
             return res.status(404).json({ success: false, message: "Course not found." });
         }
 
-        const alreadyPurchased = await prisma.purchase.findFirst({
-            where: {
-                userId: req.userId,
-                courseId
-            }
-        });
-
-        if (alreadyPurchased) {
-            return res.status(409).json({ success: false, message: "Course already purchased" });
+        if(error.message==="Already purchased."){
+            return res.status(404).json({ success: false, message: "Course already purchased." });
         }
-        const purchase = await prisma.purchase.create({
-            data: {
-                userId: req.userId,
-                courseId
-            }
-        });
 
-        return res.status(201).json({ success: true, purchaseId: purchase.id });
-    } catch (error) {
-        console.error(error);
         return res.status(500).json({ success: false, message: "Internal server error, failed to purchase course." });
     }
 }
@@ -62,7 +78,7 @@ export const getPurchasesByUserId = async (req: Request, res: Response) => {
             include: { course: true }
         });
 
-        return res.status(200).json({ success: true, courses: purchases.map(p=>p.course) });
+        return res.status(200).json({ success: true, courses: purchases.map(p => p.course) });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ success: false, message: "Internal server error, failed to get your purchases." });
